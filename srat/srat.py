@@ -26,7 +26,7 @@ from EV import *
 colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"]
 
 ###############
-def srat(finput, outdir, library, species, tissue):
+def srat(finput, outdir, library, tissue):
 	
 	### get the data with fastq format
 	files=[]
@@ -39,6 +39,7 @@ def srat(finput, outdir, library, species, tissue):
 		print("\nNo fastq format files, please check your input files!\n")
 		exit(1)
 	
+	### processing
 	files=sorted(files)
 	for i in files:
 		dir_name = i.split("/")[-1].split("_")[0]
@@ -59,13 +60,13 @@ def srat(finput, outdir, library, species, tissue):
 
 		### path
 		#pre_index = path[0] + '/../smallRNA_index' ##### set the position of RNA index file
-		pre_index = library
+		#pre_index = library
 		devnull = open(os.devnull, 'w')
 		
 		### Common analysis
 		if tissue == 'common':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = common(prefix, pre_index, species, collapser, devnull)
+			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = common(prefix, library, collapser, devnull)
 			# 2.
 			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
@@ -78,7 +79,7 @@ def srat(finput, outdir, library, species, tissue):
 		### Testis
 		elif tissue == 'testis':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = testis(prefix, pre_index, species, collapser, devnull)
+			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = testis(prefix, library,  collapser, devnull)
 			# 2.
 			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = testisProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
@@ -91,7 +92,7 @@ def srat(finput, outdir, library, species, tissue):
 		### EV
 		elif tissue == 'EV':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = EV(prefix, pre_index, species, collapser, devnull)
+			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = EV(prefix, library, collapser, devnull)
 			# 2.
 			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = EV_Process(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
@@ -183,7 +184,7 @@ if __name__ == '__main__':
 	parser.add_argument('-i', '--input', required=True, help='the input directory of raw data')
 	parser.add_argument('-o', '--outdir', default='processed_data', help='output directory')
 	parser.add_argument('-l', '--library', required=True, type=str, help='the reference sequence for mapping and annotation')
-	parser.add_argument('-s', '--species', required=True, choices=['human', 'mouse'], type=str, help='the small RNA reference')
+	#parser.add_argument('-s', '--species', required=True, choices=['human', 'mouse'], type=str, help='the small RNA reference')
 	parser.add_argument('-t', '--tissue', default='common', choices=['common', 'testis', 'EV'], type=str, help='the sample tissue type')
 	#parser.add_argument('-piRNA', help = 'considering piRNA(mostly for germline cell)', action = 'store_true')
 	#parser.add_argument('-YRNA', help = 'considering YRNA(mostly for human plasma EV)', action = 'store_true')
@@ -195,7 +196,7 @@ if __name__ == '__main__':
 	start_time = time.time()
 
 	#files = get_files(args.input)
-	srat(args.input, args.outdir, args.library, args.species, args.tissue)
+	srat(args.input, args.outdir, args.library, args.tissue)
 	
 	#merge_profiles(args.outdir, "*miRNA_counts.txt")
 	#merge_profiles(args.outdir, "*miRNA_counts_5p.txt")
