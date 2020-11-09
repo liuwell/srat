@@ -8,7 +8,7 @@ import time
 import glob
 import re
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from pandas import Series, DataFrame
 from Bio import SeqIO
 
@@ -17,13 +17,33 @@ import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
 
-#########################
+#####
+def fastq_to_fasta(fi, fo):
+	'''
+	fastq format to fasta format
+	'''
+	with open(fi) as handle:
+		d = defaultdict(int)
+		for line in SeqIO.parse(handle, 'fastq'):
+			#seq = str(line.seq)
+			d[str(line.seq)] += 1
+	d = OrderedDict(sorted(d.items(), key=lambda t: t[1], reverse=True))
+
+	n=0
+	fo = open(fo, 'w')
+	for k, v in d.items():
+		if 'N' not in k:
+			n+=1
+			fo.write(">"+str(n)+"-"+str(v)+"\n"+k+"\n")
+	
+
+#####
 def cutadapter(prefix, inputfile, threads):
 
 	### cut adapter
 	cut_adapt = prefix + ".cutadapt.fastq"
 	cut_log = prefix + ".cutadapt.log"
-	subprocess.call("cutadapt -a TGGAATTCTCGGGTGCCAAGG -O 10 -o %s %s -j %d > %s" % (cut_adapt, inputfile, threads, cut_log), shell=True)
+	subprocess.call("cutadapt -a TGGAATTCTCGGGTGCCAAGG -O 10 -o %s %s -j %d > %s 2>&1" % (cut_adapt, inputfile, threads, cut_log), shell=True)
 
 	### reads length distribution
 	plotname = cut_adapt + ".png"
@@ -34,9 +54,11 @@ def cutadapter(prefix, inputfile, threads):
 	trimmed = prefix + ".tmp.fastq"
 	collapser = prefix + ".collapser.fa"
 
-	subprocess.call("cutadapt -q 15 -m 17 -f fastq -M 60 %s -o %s >> %s" % (cut_adapt, trimmed, cut_log), shell=True)
+	subprocess.call("cutadapt -q 15 -m 17 -M 60 %s -o %s -j %d >> %s 2>&1" % (cut_adapt, trimmed, threads, cut_log), shell=True)
 
-	subprocess.call("cat %s|fastq_to_fasta |fastx_collapser -o %s" % (trimmed, collapser), shell=True)
+	#subprocess.call("cat %s|fastq_to_fasta |fastx_collapser -o %s" % (trimmed, collapser), shell=True)
+	#collapser2 = prefix + ".collapser2.fa"
+	fastq_to_fasta(trimmed, collapser) # use build-in function
 	return cut_adapt, collapser, trimmed
 
 
