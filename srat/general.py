@@ -18,12 +18,12 @@ plt.switch_backend('agg')
 
 
 #########################
-def cutadapter(prefix, inputfile):
+def cutadapter(prefix, inputfile, threads):
 
 	### cut adapter
 	cut_adapt = prefix + ".cutadapt.fastq"
 	cut_log = prefix + ".cutadapt.log"
-	subprocess.call("cutadapt -a TGGAATTCTCGGGTGCCAAGG -O 10 -o %s %s > %s" % (cut_adapt, inputfile, cut_log), shell=True)
+	subprocess.call("cutadapt -a TGGAATTCTCGGGTGCCAAGG -O 10 -o %s %s -j %d > %s" % (cut_adapt, inputfile, threads, cut_log), shell=True)
 
 	### reads length distribution
 	plotname = cut_adapt + ".png"

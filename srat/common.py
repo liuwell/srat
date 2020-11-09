@@ -24,25 +24,25 @@ colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A6
 
 
 ################
-def common(prefix, library, collapser, devnull):
+def common(prefix, library, threads, collapser, devnull):
 
 	# for spikein	
 	bowtie_spikein_out = prefix + ".bowtie_spikein.out"
 	unmapped_spikein = prefix + ".unmap_spikein.fa"
 	#index_spikein = '/home/liuwei/genome/smallRNA_index/spikein/index'
-	subprocess.call("bowtie -v 0 %s/../spikein/index -f %s --norc --un %s > %s" % (library, collapser, unmapped_spikein, bowtie_spikein_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/../spikein/index -p %d -f %s --norc --un %s > %s" % (library, threads, collapser, unmapped_spikein, bowtie_spikein_out), shell=True, stderr=devnull)
 	# for miRNA
 	unmapped_mir = prefix + ".unmap_mir.fa"
 	bowtie_mir_out = prefix + ".bowtie_miRNA.out"
-	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -f %s --un %s > %s" % (library, unmapped_spikein, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_spikein, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
 	# for other RNA
 	unmapped_RNA = prefix + ".unmap_RNA.fa"
 	bowtie_RNA_out = prefix + ".bowtie_RNA.out"
-	subprocess.call("bowtie -v 0 %s/index_RNA --norc --suppress 6,7 -f %s --un %s > %s" % (library, unmapped_mir, unmapped_RNA, bowtie_RNA_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_RNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_mir, unmapped_RNA, bowtie_RNA_out), shell=True, stderr=devnull)
 	# for genome
 	map_genome = prefix + ".map_genome.fa"
 	unmap_genome = prefix + ".unmap_genome.fa"
-	subprocess.call("bowtie -v 0 %s/genome -f %s --al %s --un %s " % (library, unmapped_RNA, map_genome, unmap_genome), shell=True, stderr=devnull, stdout=devnull)
+	subprocess.call("bowtie -v 0 %s/genome -p %d -f %s --al %s --un %s " % (library, threads, unmapped_RNA, map_genome, unmap_genome), shell=True, stderr=devnull, stdout=devnull)
 	
 	bowtie_out_combined = prefix + ".bowtie_combined.out"
 	os.system("cat %s %s > %s" % (bowtie_mir_out, bowtie_RNA_out, bowtie_out_combined))
