@@ -6,4 +6,10 @@ A small RNA analysis tool
 Sevral external software were depended for srat:
 + cutadapt >= 2.10
 + bowtie
-+ bedtools
+
+#### Mandatory
++ biopython
++ numpy
++ pandas
++ matplotlib
++ seaborn

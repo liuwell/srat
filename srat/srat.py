@@ -197,7 +197,6 @@ if __name__ == '__main__':
 	print("\n%s ..... Start small RNA processing" % (current_date()))
 	start_time = time.time()
 
-	#files = get_files(args.input)
 	srat(args.input, args.outdir, args.library, args.tissue, args.threads)
 	
 	#merge_profiles(args.outdir, "*miRNA_counts.txt")

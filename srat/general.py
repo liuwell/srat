@@ -25,7 +25,6 @@ def fastq_to_fasta(fi, fo):
 	with open(fi) as handle:
 		d = defaultdict(int)
 		for line in SeqIO.parse(handle, 'fastq'):
-			#seq = str(line.seq)
 			d[str(line.seq)] += 1
 	d = OrderedDict(sorted(d.items(), key=lambda t: t[1], reverse=True))
 
@@ -39,7 +38,9 @@ def fastq_to_fasta(fi, fo):
 
 #####
 def cutadapter(prefix, inputfile, threads):
-
+	'''
+	cut adapter, removed short reads and low quality reads, collapser fasta 
+	'''
 	### cut adapter
 	cut_adapt = prefix + ".cutadapt.fastq"
 	cut_log = prefix + ".cutadapt.log"
@@ -62,9 +63,12 @@ def cutadapter(prefix, inputfile, threads):
 	return cut_adapt, collapser, trimmed
 
 
-#########################
-def genomePlot(map_genome, unmap_genome, prefix):	
-	### length plot, only mapped genome
+#####
+def genomePlot(map_genome, unmap_genome, prefix):
+	'''
+	length plot of mapped and unmapped reads
+	'''
+	# mapped genome
 	d_series = Series(get_fasta_length(map_genome))
 	plot_map = prefix + ".length_mapGenome.png"
 	df = d_series.sort_index()
@@ -75,7 +79,7 @@ def genomePlot(map_genome, unmap_genome, prefix):
 	plt.savefig(plot_map, bbox_inches='tight')
 	plt.close()
 
-	### length plot, unmapped genome
+	# unmapped genome
 	d_series = Series(get_fasta_length(unmap_genome))
 	plot_unmap = prefix + ".length_unmapGenome.png"
 	df = d_series.sort_index()
@@ -87,8 +91,11 @@ def genomePlot(map_genome, unmap_genome, prefix):
 	plt.close()
 
 
-##########################
+#####
 def miRNAanalysis(prefix, dic_miR, dic_miR_5p, dic_type, sum_spikein, dir_name):
+	'''
+	get raw miRNA counts and normalized miRNA counts
+	'''
 	### miRNA counts
 	mir_out = open(prefix + ".miRNA_counts.txt", 'w')
 	dic_miR = sorted(dic_miR.items(), key=lambda d:d[1], reverse=True)
@@ -132,13 +139,15 @@ def miRNAanalysis(prefix, dic_miR, dic_miR_5p, dic_type, sum_spikein, dir_name):
 	
 
 
-################
+#####
 def current_date():
 	return datetime.datetime.now().strftime('%b-%d-%Y %H:%M:%S')
 
-################
-### get total count of fasta format file
+#####
 def get_count(data):
+	'''
+	get total count of fasta format file
+	'''
 	with open(data) as handle:
 		reads = 0
 		lock =re.search("fastq",data)
@@ -151,18 +160,22 @@ def get_count(data):
 					reads += int(counts)
 		return int(reads)
 
-################
-### get the length distribution of fasta format file
+#####
 def get_fasta_length(data):
+	'''
+	get the length distribution of fasta format file
+	'''
 	with open(data) as handle:
 		d = defaultdict(int)
 		for line in SeqIO.parse(handle, 'fasta'):
 			d[len(line.seq)] += int(line.id.split("-")[1])
 		return d
 
-################
-### fastq length plot
+#####
 def fastq_length_plot(fastq, plotname, writename):
+	'''
+	fastq length plot
+	'''
 	dict_length = defaultdict(int)
 	with open(fastq) as handle:
 		for record in SeqIO.parse(handle, "fastq"):
@@ -177,7 +190,6 @@ def fastq_length_plot(fastq, plotname, writename):
 
 	df = Series(dict_length)
 	df = df.sort_index()
-	#print df
 	df.to_csv(writename, header=False, sep="\t", float_format="%.0f")
 	df.plot(kind = "bar", color = "#990000", fontsize = 15, width = 1)
 	plt.xlim(-1, 61)
