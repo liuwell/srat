@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
-from sys import argv, path, exit
+### check python version
+from sys import exit, version_info
+if not version_info.major == 3 and version_info.minor >= 6:
+	#print(version_info)
+	print("\nThis script requires Python 3.6 or higher!")
+	print("\nYou are using Python {}.{}\n".format(version_info.major, version_info.minor))
+	exit(1)
+
+from sys import argv, path
 import os
 import subprocess
 import argparse
@@ -17,7 +25,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
-
+### import my library
 from general import *
 from common import *
 from testis import *
