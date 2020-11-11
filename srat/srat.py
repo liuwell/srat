@@ -67,11 +67,8 @@ def srat(finput, outdir, library, tissue, threads):
 		### cutadapt
 		cut_adapt, collapser, trimmed = cutadapter(prefix, inputfile, threads)
 
-		### path
-		#pre_index = path[0] + '/../smallRNA_index' ##### set the position of RNA index file
-		#pre_index = library
+		###
 		devnull = open(os.devnull, 'w')
-		
 		### Common analysis
 		if tissue == 'common':
 			# 1.
@@ -138,12 +135,9 @@ if __name__ == '__main__':
 	parser.add_argument('-i', '--input', required=True, help='the input directory of raw data')
 	parser.add_argument('-o', '--outdir', default='processed_data', help='output directory')
 	parser.add_argument('-l', '--library', required=True, type=str, help='the reference sequence for mapping and annotation')
-	#parser.add_argument('-s', '--species', required=True, choices=['human', 'mouse'], type=str, help='the small RNA reference')
 	parser.add_argument('-t', '--tissue', default='common', choices=['common', 'testis', 'sperm', 'EV'], type=str, help='the sample tissue type')
 	parser.add_argument('-p', '--threads', default=1, type=int, help='number of alignment threads to launch (default: 1)')
-
-	#parser.add_argument('-piRNA', help = 'considering piRNA(mostly for germline cell)', action = 'store_true')
-	#parser.add_argument('-YRNA', help = 'considering YRNA(mostly for human plasma EV)', action = 'store_true')
+	parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
 
 	args = parser.parse_args()
 
@@ -158,7 +152,6 @@ if __name__ == '__main__':
 	merge_profiles(args.outdir, "*miRNA_miR.txt")
 	#merge_profiles(args.outdir, "*miRNA_mapped.txt")
 	merge_profiles(args.outdir, "*summary_count.txt")
-	#merge_profiles(args.outdir, "*pie_RNA.txt", barplot=True, tissue=args.tissue)
 	merge_barplot(args.outdir, "*pie_RNA.txt", tissue=args.tissue)
 
 	end_time = time.time()

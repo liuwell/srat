@@ -49,7 +49,6 @@ def merge_profiles(outdir, var, value=False):
 
 def merge_barplot(outdir, var, tissue):
 	
-	#prefix = os.path.join(outdir, "merge_")
 	df, prefix, out_name = merge_profiles(outdir, var, value=True)
 	df=df.T
 	### ncol: df.shape[1], nrow: df.shape[0]
