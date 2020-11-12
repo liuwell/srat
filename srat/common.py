@@ -138,7 +138,7 @@ def commonPlot(dic_length_RNA, total_RNA, prefix):
 	### length distribution of different RNA types
 	#df = DataFrame(dic_length_RNA).T
 	df = dic_length_RNA.fillna(value=0)
-	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'misc_RNA', 'lincRNA', 'mRNA']]
+	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)

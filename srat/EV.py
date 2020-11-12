@@ -28,7 +28,6 @@ def EV(prefix, library, threads, collapser, devnull):
 	# for spikein	
 	bowtie_spikein_out = prefix + ".bowtie_spikein.out"
 	unmapped_spikein = prefix + ".unmap_spikein.fa"
-	#index_spikein = '/home/liuwei/genome/smallRNA_index/spikein/index'
 	subprocess.call("bowtie -v 0 %s/../spikein/index -p %d -f %s --norc --un %s > %s" % (library, threads, collapser, unmapped_spikein, bowtie_spikein_out), shell=True, stderr=devnull)
 	
 	# for miRNA
@@ -49,8 +48,8 @@ def EV(prefix, library, threads, collapser, devnull):
 	subprocess.call("bowtie -v 0 %s/genome -p %d -f %s --al %s --un %s " % (library, threads, unmapped_RNA, map_genome, unmap_genome), shell=True, stderr=devnull, stdout=devnull)
 	# combined
 	bowtie_out_combined = prefix + ".bowtie_combined.out"
-	os.system("cat %s %s %s > %s" % (bowtie_mir_out, bowtie_YRNA_out, bowtie_RNA_out, bowtie_out_combined))
-	os.system("rm %s %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_YRNA, unmapped_RNA))
+	os.system("cat %s %s %s> %s" % (bowtie_mir_out, bowtie_YRNA_out, bowtie_RNA_out, bowtie_out_combined))
+	os.system("rm %s %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_YRNA,unmapped_RNA))
 
 	return bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome
 
@@ -151,7 +150,7 @@ def EV_Plot(dic_length_RNA, total_RNA, prefix):
 	### length distribution of different RNA types
 	#df = DataFrame(dic_length_RNA).T
 	df = dic_length_RNA.fillna(value=0)
-	df_RNA = df.loc[:,['miRNA', 'YRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lincRNA', 'mRNA']]
+	df_RNA = df.loc[:,['miRNA', 'YRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)

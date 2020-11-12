@@ -35,28 +35,24 @@ def sperm(prefix, library, threads, collapser, devnull):
 	unmapped_mir = prefix + ".unmap_mir.fa"
 	bowtie_mir_out = prefix + ".bowtie_miRNA.out"
 	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_spikein, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
-	# for tsRNA
-	map_tsRNA = prefix + ".map_tsRNA.fa"
-	unmapped_tsRNA = prefix + ".unmap_tsRNA.fa"
-	bowtie_tsRNA_out = prefix + ".bowtie_tsRNA.out"
-	subprocess.call("bowtie -v 0 %s/index_tsRNA -p %d -f %s --al %s --un %s > %s" % (library, threads, unmapped_mir, map_tsRNA, unmapped_tsRNA, bowtie_tsRNA_out), shell=True, stderr=devnull)
-	# for rsRNA
-	map_rsRNA = prefix + ".map_rsRNA.fa"
-	unmapped_rsRNA = prefix + ".unmap_rsRNA.fa"
-	bowtie_rsRNA_out = prefix + ".bowtie_rsRNA.out"
-	subprocess.call("bowtie -v 0 %s/index_rsRNA -p %d -f %s --al %s --un %s > %s" % (library, threads, unmapped_tsRNA, map_rsRNA, unmapped_rsRNA, bowtie_rsRNA_out), shell=True, stderr=devnull)
-	# for other RNA
+	
+	# for sperm piRNA
+	unmapped_piRNA = prefix + ".unmap_piRNA.fa"
+	bowtie_piRNA_out = prefix + ".bowtie_piRNA.out"
+	subprocess.call("bowtie -v 0 %s/index_piRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_mir, unmapped_piRNA, bowtie_piRNA_out), shell=True, stderr=devnull)
+	
+	# for tsRNA, rsRNA and other RNA
 	unmapped_RNA = prefix + ".unmap_RNA.fa"
 	bowtie_RNA_out = prefix + ".bowtie_RNA.out"
-	subprocess.call("bowtie -v 0 %s/index_RNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_rsRNA, unmapped_RNA, bowtie_RNA_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_RNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_piRNA, unmapped_RNA, bowtie_RNA_out), shell=True, stderr=devnull)
 	# for genome
 	map_genome = prefix + ".map_genome.fa"
 	unmap_genome = prefix + ".unmap_genome.fa"
 	subprocess.call("bowtie -v 0 %s/genome -p %d -f %s --al %s --un %s " % (library, threads, unmapped_RNA, map_genome, unmap_genome), shell=True, stderr=devnull, stdout=devnull)
 	# combined
 	bowtie_out_combined = prefix + ".bowtie_combined.out"
-	os.system("cat %s %s %s %s> %s" % (bowtie_mir_out, bowtie_tsRNA_out, bowtie_rsRNA_out, bowtie_RNA_out, bowtie_out_combined))
-	os.system("rm %s %s %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_tsRNA, unmapped_rsRNA, unmapped_RNA))
+	os.system("cat %s %s %s> %s" % (bowtie_mir_out, bowtie_piRNA_out, bowtie_RNA_out, bowtie_out_combined))
+	os.system("rm %s %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_piRNA, unmapped_RNA))
 
 	return bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome
 
@@ -178,7 +174,8 @@ def spermProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, 
 def spermPlot(dic_length_RNA, total_RNA, prefix):
 
 	df = dic_length_RNA.fillna(value=0)
-	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lincRNA', 'mRNA']]
+	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)

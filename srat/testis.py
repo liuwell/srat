@@ -39,7 +39,7 @@ def testis(prefix, library, threads, collapser, devnull):
 	map_piRNA = prefix + ".map_piRNA.fa"
 	unmapped_piRNA = prefix + ".unmap_piRNA.fa"
 	bowtie_piRNA_out = prefix + ".bowtie_piRNA.out"
-	subprocess.call("bowtie -v 0 %s/testis2/index_piRNA -p %d -f %s --al %s --un %s > %s" % (library, threads, unmapped_mir, map_piRNA, unmapped_piRNA, bowtie_piRNA_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_piRNA -p %d -f %s --al %s --un %s > %s" % (library, threads, unmapped_mir, map_piRNA, unmapped_piRNA, bowtie_piRNA_out), shell=True, stderr=devnull)
 	# for other RNA
 	unmapped_RNA = prefix + ".unmap_RNA.fa"
 	bowtie_RNA_out = prefix + ".bowtie_RNA.out"
@@ -173,7 +173,7 @@ def testisProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome,
 def testisPlot(dic_length_RNA, total_RNA, prefix):
 
 	df = dic_length_RNA.fillna(value=0)
-	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lincRNA', 'mRNA']]
+	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)

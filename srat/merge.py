@@ -59,13 +59,14 @@ def merge_barplot(outdir, var, tissue):
 		width = math.log(width, 2) * 2 ### adjust the width of barplot
 
 	if tissue == 'common':
-		df = df.reindex(columns = ['miRNA','tsRNA','rsRNA','snoRNA','misc_RNA','lincRNA','mRNA','others'])
+		df = df.reindex(columns = ['miRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
 	elif tissue == 'testis':
-		df = df.reindex(columns = ['miRNA','piRNA','tsRNA','rsRNA','snoRNA','lincRNA','mRNA','others'])
+		df = df.reindex(columns = ['miRNA','piRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
 	elif tissue == 'EV':
-		df = df.reindex(columns = ['miRNA','YRNA','tsRNA','rsRNA','snoRNA','lincRNA','mRNA','others'])
+		df = df.reindex(columns = ['miRNA','YRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
 	elif tissue == 'sperm':
-		df = df.reindex(columns = ['miRNA','tsRNA','rsRNA','snoRNA','lincRNA','mRNA','others'])
+		#df = df.reindex(columns = ['miRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
+		df = df.reindex(columns = ['miRNA', 'piRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
 
 	df_pcts = df.div(df.sum(1).astype(float), axis=0) * 100
 	percent_out = prefix + out_name.split('.')[0] + '_percent.pdf'
