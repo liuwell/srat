@@ -127,7 +127,7 @@ def commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome,
 
 	### rename dic_length_RNA
 	dic_length_RNA = DataFrame(dic_length_RNA).T
-	dic_length_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
+	#dic_length_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
 	
 	return dic_length_RNA, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein
 
