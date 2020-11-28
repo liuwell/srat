@@ -113,12 +113,13 @@ def srat(finput, outdir, library, tissue, threads):
 			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = sperm(prefix, library, threads, collapser, devnull)
 			# 2.
 			sperm_RNA(bowtie_out_combined, prefix)
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = spermProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
-			spermPlot(RNA_length,total_RNA, prefix)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 4.
-			genomePlot(map_genome, unmap_genome, prefix)
+			spermPlot(RNA_length,total_RNA, prefix)
 			# 5.
+			genomePlot(map_genome, unmap_genome, prefix)
+			# 6.
 			miRNAanalysis(prefix, dic_miR, dic_miR_5p, dic_type, sum_spikein, dir_name)
 
 
@@ -126,6 +127,15 @@ def srat(finput, outdir, library, tissue, threads):
 		devnull.close()
 		print("\n%s ..... Finished %s" % (current_date(), dir_name))
 
+	merge_profiles(outdir, "*summary_count.txt")
+	merge_profiles(outdir, "*miRNA_counts_5p.txt")
+	merge_profiles(outdir, "*miRNA_counts.txt")
+	merge_barplot(outdir, "*pie_RNA.txt", tissue=args.tissue)
+	
+	if tissue == 'sperm':
+		merge_profiles(outdir, "*tsRNA_counts.txt")
+		merge_profiles(outdir, "*rsRNA_counts.txt")
+		merge_profiles(outdir, "*piRNA_seq.txt")
 
 
 # =============================================== #
@@ -150,10 +160,10 @@ if __name__ == '__main__':
 	
 	#merge_profiles(args.outdir, "*miRNA_counts.txt")
 	#merge_profiles(args.outdir, "*miRNA_counts_5p.txt")
-	merge_profiles(args.outdir, "*miRNA_miR.txt")
+	#merge_profiles(args.outdir, "*miRNA_miR.txt")
 	#merge_profiles(args.outdir, "*miRNA_mapped.txt")
-	merge_profiles(args.outdir, "*summary_count.txt")
-	merge_barplot(args.outdir, "*pie_RNA.txt", tissue=args.tissue)
+	#merge_profiles(args.outdir, "*summary_count.txt")
+	#merge_barplot(args.outdir, "*pie_RNA.txt", tissue=args.tissue)
 
 	end_time = time.time()
 	run_time = round((end_time - start_time)/60, 5)
