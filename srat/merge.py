@@ -9,6 +9,7 @@ colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A6
 
 def merge_profiles(outdir, var, value=False):
 	files = glob.glob("%s/*/%s" % (outdir,var))
+	files = sorted(files)
 	#print(files)
 	if files  :
 

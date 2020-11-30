@@ -216,6 +216,9 @@ def spermProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, 
 def spermPlot(dic_length_RNA, total_RNA, prefix):
 
 	df = dic_length_RNA.fillna(value=0)
+	# sort by index, ascending
+	df = df.sort_index(axis=0, ascending=True)
+	
 	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
