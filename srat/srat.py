@@ -100,7 +100,7 @@ def srat(finput, outdir, library, tissue, threads):
 			# 1.
 			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = EV(prefix, library, threads, collapser, devnull)
 			# 2.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = EV_Process(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
 			EV_Plot(RNA_length,total_RNA, prefix)
 			# 4.

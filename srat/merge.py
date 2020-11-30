@@ -66,8 +66,7 @@ def merge_barplot(outdir, var, tissue):
 	elif tissue == 'EV':
 		df = df.reindex(columns = ['miRNA','YRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
 	elif tissue == 'sperm':
-		#df = df.reindex(columns = ['miRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
-		df = df.reindex(columns = ['miRNA', 'piRNA','tsRNA','rsRNA','snoRNA','lncRNA','mRNA','others'])
+		df = df.reindex(columns = ['miRNA', 'tsRNA','rsRNA','piRNA','snoRNA','lncRNA','mRNA','others'])
 
 	df_pcts = df.div(df.sum(1).astype(float), axis=0) * 100
 	percent_out = prefix + out_name.split('.')[0] + '_percent.pdf'

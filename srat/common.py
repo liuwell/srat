@@ -67,9 +67,11 @@ def commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome,
 	with open(bowtie_out_combined) as handle:
 		for line in handle:
 			seg =line.split()
+
 			count = int(seg[0].split("-")[1])
-			if re.search("miRNA", seg[2]):  ####### changed
-				mir = seg[2].split("|")[0]
+			mir_tag = seg[2].split("|")
+			if mir_tag[2]=="miRNA" and mir_tag[1]=="mature":
+				mir = mir_tag[0]
 				dic_miR[mir]+=count
 				miRNA_kinds.add(mir)
 				### no 5p isoform

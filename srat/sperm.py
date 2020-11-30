@@ -220,7 +220,7 @@ def spermPlot(dic_length_RNA, total_RNA, prefix):
 	df = df.sort_index(axis=0, ascending=True)
 	
 	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
-	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'piRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)
