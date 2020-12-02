@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import argparse
 import os
 import math
 import glob
@@ -78,4 +81,19 @@ def merge_barplot(outdir, var, tissue):
 	plt.savefig(percent_out, bbox_inches='tight')
 	plt.close()
 
+if __name__ == '__main__' :
 
+	parser = argparse.ArgumentParser(description = 'Merge small RNA profiles')
+
+	parser.add_argument('-i', '--input', required=True, help='the input directory of processed data')
+	parser.add_argument('-prefix', required=True, type=str, help='the prefix of merging files')
+	parser.add_argument('-barplot', action='store_true', help='perform barplot of merged files')
+	parser.add_argument('-t', '--tissue', default='common', choices=['common', 'testis', 'sperm', 'EV'], type=str, help='the sample tissue type')
+
+	args = parser.parse_args()
+
+	merge_profiles(args.input, args.prefix)
+	if args.barplot:
+		merge_barplot(args.input, args.prefix, args.tissue)
+
+	print("\nmerging %s files successful\n" % args.prefix)
