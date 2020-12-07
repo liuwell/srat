@@ -104,7 +104,9 @@ def srat(finput, outdir, library, tissue, threads, no_merge):
 			# 2.
 			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
-			EV_Plot(RNA_length,total_RNA, prefix)
+			dic_YRNA_type = EV_YRNA(bowtie_out_combined, prefix)
+			# .
+			EV_Plot(RNA_length,total_RNA, prefix, dic_YRNA_type)
 			# 4.
 			genomePlot(map_genome, unmap_genome, prefix)
 			# 5.
@@ -144,6 +146,9 @@ def srat(finput, outdir, library, tissue, threads, no_merge):
 
 		elif tissue == 'testis':
 			merge_profiles(outdir, "*piRNA_seq.txt")
+
+		elif tissue == "EV":
+			merge_profiles(outdir, "*YRNA_counts.txt")
 			
 	# ======================= #
 	# for spikein 
