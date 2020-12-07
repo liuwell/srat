@@ -143,7 +143,10 @@ def commonPlot(dic_length_RNA, total_RNA, prefix):
 	
 	# sort by index, ascending
 	df = df.sort_index(axis=0, ascending=True)
-	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+
+	# fix bug for index
+	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	df_RNA = df.reindex(columns=['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA'], fill_value=0)
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)

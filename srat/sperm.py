@@ -133,11 +133,12 @@ def spermPlot(dic_length_RNA, total_RNA, prefix):
 	# sort by index, ascending
 	df = df.sort_index(axis=0, ascending=True)
 	
-	df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'piRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	# fix bug for index
+	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'piRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	df_RNA = df.reindex(columns=['miRNA', 'tsRNA', 'rsRNA', 'piRNA', 'snoRNA', 'lncRNA', 'mRNA'], fill_value=0)
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)
-	#df_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
 
 	plot_RNA = prefix + ".length_RNA_counts.pdf"
 	df_RNA.plot(kind='bar', stacked=True, fontsize = 15, color=colors, width=1, linewidth=0.01)

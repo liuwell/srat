@@ -35,7 +35,7 @@ from merge import *
 colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"]
 
 ###############
-def srat(finput, outdir, library, tissue, threads):
+def srat(finput, outdir, library, tissue, threads, no_merge):
 	
 	### get the data with fastq format
 	files=[]
@@ -87,12 +87,14 @@ def srat(finput, outdir, library, tissue, threads):
 			# 1.
 			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = testis(prefix, library, threads, collapser, devnull)
 			# 2.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = testisProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
 			# 3.
-			testisPlot(RNA_length,total_RNA, prefix)
+			testis_piRNA(bowtie_out_combined, prefix)
 			# 4.
-			genomePlot(map_genome, unmap_genome, prefix)
+			testisPlot(RNA_length,total_RNA, prefix)
 			# 5.
+			genomePlot(map_genome, unmap_genome, prefix)
+			# 6.
 			miRNAanalysis(prefix, dic_miR, dic_miR_5p, dic_type, sum_spikein, dir_name)
 		
 		### EV
@@ -126,16 +128,25 @@ def srat(finput, outdir, library, tissue, threads):
 		subprocess.call("rm %s %s" % (trimmed, cut_adapt), shell=True)
 		devnull.close()
 		print("\n%s ..... Finished %s" % (current_date(), dir_name))
-
-	merge_profiles(outdir, "*summary_count.txt")
-	merge_profiles(outdir, "*miRNA_counts_5p.txt")
-	merge_profiles(outdir, "*miRNA_counts.txt")
-	merge_barplot(outdir, "*pie_RNA.txt", tissue=args.tissue)
 	
-	if tissue == 'sperm':
-		merge_profiles(outdir, "*tsRNA_counts.txt")
-		merge_profiles(outdir, "*rsRNA_counts.txt")
-		merge_profiles(outdir, "*piRNA_seq.txt")
+	# ======================= #
+	# merge expression files
+	if no_merge:
+		merge_profiles(outdir, "*summary_count.txt")
+		merge_profiles(outdir, "*miRNA_counts_5p.txt")
+		merge_profiles(outdir, "*miRNA_counts.txt")
+		merge_barplot(outdir, "*pie_RNA.txt", tissue=args.tissue)
+		
+		if tissue == 'sperm':
+			merge_profiles(outdir, "*tsRNA_counts.txt")
+			merge_profiles(outdir, "*rsRNA_counts.txt")
+			merge_profiles(outdir, "*piRNA_seq.txt")
+
+		elif tissue == 'testis':
+			merge_profiles(outdir, "*piRNA_seq.txt")
+			
+	# ======================= #
+	# for spikein 
 
 
 # =============================================== #
@@ -148,6 +159,7 @@ if __name__ == '__main__':
 	parser.add_argument('-l', '--library', required=True, type=str, help='the reference sequence for mapping and annotation')
 	parser.add_argument('-t', '--tissue', default='common', choices=['common', 'testis', 'sperm', 'EV'], type=str, help='the sample tissue type')
 	parser.add_argument('-p', '--threads', default=1, type=int, help='number of alignment threads to launch (default: 1)')
+	parser.add_argument('--no_merge', action='store_false', help="not merge the expression files")
 	parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
 
 	args = parser.parse_args()
@@ -156,15 +168,8 @@ if __name__ == '__main__':
 	print("\n%s ..... Start small RNA processing" % (current_date()))
 	start_time = time.time()
 
-	srat(args.input, args.outdir, args.library, args.tissue, args.threads)
+	srat(args.input, args.outdir, args.library, args.tissue, args.threads, args.no_merge)
 	
-	#merge_profiles(args.outdir, "*miRNA_counts.txt")
-	#merge_profiles(args.outdir, "*miRNA_counts_5p.txt")
-	#merge_profiles(args.outdir, "*miRNA_miR.txt")
-	#merge_profiles(args.outdir, "*miRNA_mapped.txt")
-	#merge_profiles(args.outdir, "*summary_count.txt")
-	#merge_barplot(args.outdir, "*pie_RNA.txt", tissue=args.tissue)
-
 	end_time = time.time()
 	run_time = round((end_time - start_time)/60, 5)
 	### End

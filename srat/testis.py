@@ -55,119 +55,27 @@ def testis(prefix, library, threads, collapser, devnull):
 
 	return bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome
 
-#########################
-def testisProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out):
+def testis_piRNA(bowtie_out_combined, prefix):
 
-	dic_miR = defaultdict(int)         ### count miRNA 
-	dic_miR_5p = defaultdict(int)      ### count miRNA, 5p in align
-	dic_type = defaultdict(int)        ### count RNA type
-	dic_all = defaultdict(int)         ### count RNA count
-	dic_all_seq = defaultdict(int)     ### count RNA seq
-	
-	total_RNA = 0
-	miRNA_kinds = set()
-
-	dic_length_RNA = {}  ### length distribution of all different kinds mapped RNAs
-
-	piRNA_seq = set()
-	piRNA_cluster = set()
 	dic_piR = defaultdict(int)
 	dic_piR_cluster = defaultdict(int)
-
+	
 	with open(bowtie_out_combined) as handle:
 		for line in handle:
 			seg =line.split()
 			count = int(seg[0].split("-")[1])
-
-			### miRNA
-			mir_tag = seg[2].split("|")
-			if mir_tag[2]=="miRNA" and mir_tag[1]=="mature":
-				mir = mir_tag[0]
-				dic_miR[mir]+=count
-				miRNA_kinds.add(mir)
-				### no 5p isoform
-				if seg[3] == "0":
-					dic_miR_5p[mir]+=count
-			
-			title_split = seg[2].split("|")
-			RNA_type = title_split[-1]
-			dic_type[RNA_type] += count
-			total_RNA += count
-
-			k_map = len(seg[4])
-			k_RNA = RNA_type
-			if k_map in dic_length_RNA:
-				if k_RNA in dic_length_RNA[k_map]:
-					dic_length_RNA[k_map][k_RNA] += count
-
-				else:
-					dic_length_RNA[k_map][k_RNA] = count
-
-			else:
-				tmp_dic = {}
-				tmp_dic[k_RNA] = count
-				dic_length_RNA[k_map] = tmp_dic
-
 			### piRNA
 			if re.search("piRNA", seg[2]):
-				pir_c = seg[2].split("|")[0]
-				piRNA_cluster.add(pir_c)
-				piRNA_seq.add(seg[4])
 				dic_piR[seg[4]]+=count
+				pir_c = seg[2].split("|")[0]
 				dic_piR_cluster[pir_c]+=count
-	
-	### summary RNA counts
-	summary_out = open(prefix+'.summary_count.txt','w')
-	dic_type["totals"] = get_count(cut_adapt)
-	dic_type["useful"] = get_count(collapser)
-	useful_ratio = round(dic_type["useful"]/dic_type["totals"]*100, 2)
 
-	dic_type["total_map"] = get_count(map_genome)+total_RNA
-	dic_type["total_knownRNA"] = total_RNA
-	map_ratio = round(dic_type["total_map"]/dic_type["useful"]*100, 2)
-	RNA_ratio = round(dic_type["total_knownRNA"]/dic_type["total_map"]*100, 2)
-	dic_type["miRNA_kinds"] = len(miRNA_kinds)
-
-	dic_type["piRNA_cluster"] = len(piRNA_cluster)
-	dic_type["piRNA_seq"] = len(piRNA_seq)
-	
-	dic_type_sort = sorted(dic_type.items(), key=lambda d:d[1], reverse=True)
-	for k in dic_type_sort:
-		summary_out.write(k[0] + "\t"+ str(k[1]) + "\n")
-
-	### for spikein
-	with open(bowtie_spikein_out) as handle:
-		sum_spikein = sum([int(i.split()[0].split("-")[1]) for i in handle])
-	dic_type["spikein"] = sum_spikein
-	spikein_ratio = round(dic_type["spikein"]/dic_type["total_map"]*100, 2)
-
-	summary_out.write("useful_ratio(%)" + "\t" + str(useful_ratio) + "\n")
-	summary_out.write("map_ratio(%)" + "\t" + str(map_ratio) + "\n")
-	summary_out.write("knownRNA_ratio(%)" + "\t" + str(RNA_ratio) + "\n")
-	summary_out.write("spikein" + "\t" + str(sum_spikein) + "\n")
-	summary_out.write("spikein_ratio(map%)" + "\t" + str(spikein_ratio) + "\n")
-	summary_out.close()
-	
-	### piRNA
-	dic_piR = sorted(dic_piR.items(), key=lambda d:d[1], reverse=True)
-	pir_file = prefix + ".piRNA_seq.txt"
-	pir_out = open(pir_file,'w')
-	for k in dic_piR:
-		pir_out.write(k[0] + "\t"+ str(k[1]) + "\n")
-	pir_out.close()
-
-	dic_piR_cluster = sorted(dic_piR_cluster.items(), key=lambda d:d[1], reverse=True)
-	pir_file2 = prefix + ".piRNA_cluster.txt"
-	pir_out2 = open(pir_file2,'w')
-	for k in dic_piR_cluster:
-		pir_out2.write(k[0] + "\t"+ str(k[1]) + "\n")
-	pir_out2.close()
-	
-	### rename dic_length_RNA
-	dic_length_RNA = DataFrame(dic_length_RNA).T
-	dic_length_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
-
-	return dic_length_RNA, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein
+	piRNA_out = prefix + ".piRNA_seq.txt"
+	piRNA_series = Series(dic_piR)
+	piRNA_series.to_csv(piRNA_out, header=False, sep='\t')
+	piRNA_out2 = prefix + ".piRNA_cluster.txt"
+	piRNA_series2 = Series(dic_piR_cluster)
+	piRNA_series2.to_csv(piRNA_out2, header=False, sep='\t')
 
 
 ###################
@@ -175,11 +83,13 @@ def testisPlot(dic_length_RNA, total_RNA, prefix):
 
 	df = dic_length_RNA.fillna(value=0)
 	df = df.sort_index(axis=0, ascending=True)
-	df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	
+	#df_RNA = df.loc[:,['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
+	df_RNA = df.reindex(columns=['miRNA', 'piRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA'], fill_value=0)
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
 	df_RNA = df_RNA.join(df_RNA_other)
-	df_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
+	#df_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
 
 	plot_RNA = prefix + ".length_RNA_counts.pdf"
 	df_RNA.plot(kind='bar', stacked=True, fontsize = 15, color=colors, width=1, linewidth=0.01)
