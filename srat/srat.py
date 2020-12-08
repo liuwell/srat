@@ -35,7 +35,7 @@ from merge import *
 colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"]
 
 ###############
-def srat(finput, outdir, library, tissue, threads, no_merge):
+def srat(finput, outdir, library, tissue, threads, no_merge, spikein):
 	
 	### get the data with fastq format
 	files=[]
@@ -66,15 +66,22 @@ def srat(finput, outdir, library, tissue, threads, no_merge):
 		
 		### cutadapt
 		cut_adapt, collapser, trimmed = cutadapter(prefix, inputfile, threads)
-
+	
 		###
 		devnull = open(os.devnull, 'w')
+		
+		### spikein
+		if spikein:
+			sum_spikein = Spikein(prefix, library, threads, collapser, devnull)
+		else:
+			sum_spikein = 0
+
 		### Common analysis
 		if tissue == 'common':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = common(prefix, library, threads,collapser, devnull)
+			bowtie_out_combined, map_genome, unmap_genome = common(prefix, library, threads,collapser, devnull)
 			# 2.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, sum_spikein)
 			# 3.
 			commonPlot(RNA_length,total_RNA, prefix)
 			# 4.
@@ -85,9 +92,9 @@ def srat(finput, outdir, library, tissue, threads, no_merge):
 		### Testis
 		elif tissue == 'testis':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = testis(prefix, library, threads, collapser, devnull)
+			bowtie_out_combined, map_genome, unmap_genome = testis(prefix, library, threads, collapser, devnull)
 			# 2.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, sum_spikein)
 			# 3.
 			testis_piRNA(bowtie_out_combined, prefix)
 			# 4.
@@ -100,25 +107,25 @@ def srat(finput, outdir, library, tissue, threads, no_merge):
 		### EV
 		elif tissue == 'EV':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = EV(prefix, library, threads, collapser, devnull)
+			bowtie_out_combined, map_genome, unmap_genome = EV(prefix, library, threads, collapser, devnull)
 			# 2.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, sum_spikein)
 			# 3.
 			dic_YRNA_type = EV_YRNA(bowtie_out_combined, prefix)
-			# .
-			EV_Plot(RNA_length,total_RNA, prefix, dic_YRNA_type)
 			# 4.
-			genomePlot(map_genome, unmap_genome, prefix)
+			EV_Plot(RNA_length,total_RNA, prefix, dic_YRNA_type)
 			# 5.
+			genomePlot(map_genome, unmap_genome, prefix)
+			# 6.
 			miRNAanalysis(prefix, dic_miR, dic_miR_5p, dic_type, sum_spikein, dir_name)
 		
 		elif tissue == 'sperm':
 			# 1.
-			bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome = sperm(prefix, library, threads, collapser, devnull)
+			bowtie_out_combined, map_genome, unmap_genome = sperm(prefix, library, threads, collapser, devnull)
 			# 2.
 			sperm_RNA(bowtie_out_combined, prefix)
 			# 3.
-			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out)
+			RNA_length, total_RNA, dic_miR, dic_miR_5p, dic_type = commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, sum_spikein)
 			# 4.
 			spermPlot(RNA_length,total_RNA, prefix)
 			# 5.
@@ -165,6 +172,7 @@ if __name__ == '__main__':
 	parser.add_argument('-t', '--tissue', default='common', choices=['common', 'testis', 'sperm', 'EV'], type=str, help='the sample tissue type')
 	parser.add_argument('-p', '--threads', default=1, type=int, help='number of alignment threads to launch (default: 1)')
 	parser.add_argument('--no_merge', action='store_false', help="not merge the expression files")
+	parser.add_argument('--spikein', action='store_true', help="consider spikein in the library")
 	parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
 
 	args = parser.parse_args()
@@ -173,7 +181,7 @@ if __name__ == '__main__':
 	print("\n%s ..... Start small RNA processing" % (current_date()))
 	start_time = time.time()
 
-	srat(args.input, args.outdir, args.library, args.tissue, args.threads, args.no_merge)
+	srat(args.input, args.outdir, args.library, args.tissue, args.threads, args.no_merge, args.spikein)
 	
 	end_time = time.time()
 	run_time = round((end_time - start_time)/60, 5)

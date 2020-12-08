@@ -21,20 +21,23 @@ from general import *
 
 colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"]
 
+# ================ #
+def Spikein(prefix, library, threads, collapser, devnull):
+	
+	bowtie_spikein_out = prefix + ".bowtie_spikein.out"
+	subprocess.call("bowtie -v 0 %s/../spikein/index -p %d -f %s --norc > %s" % (library, threads, collapser, bowtie_spikein_out), shell=True, stderr=devnull)
+	with open(bowtie_spikein_out) as handle:
+		sum_spikein = sum([int(i.split()[0].split("-")[1]) for i in handle])
+	
+	return sum_spikein
 
-
-################
+# ================ #
 def common(prefix, library, threads, collapser, devnull):
 
-	# for spikein	
-	bowtie_spikein_out = prefix + ".bowtie_spikein.out"
-	unmapped_spikein = prefix + ".unmap_spikein.fa"
-	#index_spikein = '/home/liuwei/genome/smallRNA_index/spikein/index'
-	subprocess.call("bowtie -v 0 %s/../spikein/index -p %d -f %s --norc --un %s > %s" % (library, threads, collapser, unmapped_spikein, bowtie_spikein_out), shell=True, stderr=devnull)
 	# for miRNA
 	unmapped_mir = prefix + ".unmap_mir.fa"
 	bowtie_mir_out = prefix + ".bowtie_miRNA.out"
-	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_spikein, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, collapser, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
 	# for other RNA
 	unmapped_RNA = prefix + ".unmap_RNA.fa"
 	bowtie_RNA_out = prefix + ".bowtie_RNA.out"
@@ -46,12 +49,13 @@ def common(prefix, library, threads, collapser, devnull):
 	
 	bowtie_out_combined = prefix + ".bowtie_combined.out"
 	os.system("cat %s %s > %s" % (bowtie_mir_out, bowtie_RNA_out, bowtie_out_combined))
-	os.system("rm %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_RNA))
+	os.system("rm %s %s" % (unmapped_mir, unmapped_RNA))
+	os.system("rm %s %s" % (bowtie_mir_out, bowtie_RNA_out))
 
-	return bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome
+	return bowtie_out_combined, map_genome, unmap_genome
 
-#########################
-def commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, bowtie_spikein_out):
+# ================ #
+def commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome, sum_spikein):
 
 	dic_miR = defaultdict(int)         ### count miRNA 
 	dic_miR_5p = defaultdict(int)      ### count miRNA, 5p in align
@@ -115,23 +119,19 @@ def commonProcess(bowtie_out_combined, prefix, cut_adapt, collapser, map_genome,
 		summary_out.write(k[0] + "\t"+ str(k[1]) + "\n")
 
 	### for spikein
-	with open(bowtie_spikein_out) as handle:
-		sum_spikein = sum([int(i.split()[0].split("-")[1]) for i in handle])
-	dic_type["spikein"] = sum_spikein
-	spikein_ratio = round(dic_type["spikein"]/dic_type["total_map"]*100, 2)
+	if sum_spikein>0:
+		dic_type["spikein"] = sum_spikein
+		spikein_ratio = round(dic_type["spikein"]/dic_type["total_map"]*100, 2)
+		summary_out.write("spikein" + "\t" + str(sum_spikein) + "\n")
+		summary_out.write("spikein_ratio(map%)" + "\t" + str(spikein_ratio) + "\n")
 
 	summary_out.write("useful_ratio(%)" + "\t" + str(useful_ratio) + "\n")
 	summary_out.write("map_ratio(%)" + "\t" + str(map_ratio) + "\n")
 	summary_out.write("knownRNA_ratio(%)" + "\t" + str(RNA_ratio) + "\n")
-	summary_out.write("spikein" + "\t" + str(sum_spikein) + "\n")
-	summary_out.write("spikein_ratio(map%)" + "\t" + str(spikein_ratio) + "\n")
 	summary_out.close()
 
-	### rename dic_length_RNA
 	dic_length_RNA = DataFrame(dic_length_RNA).T
-	#dic_length_RNA.rename(columns={'tRNA':'tsRNA', 'rRNA':'rsRNA', 'protein_coding':'mRNA'}, inplace=True)
-	
-	return dic_length_RNA, total_RNA, dic_miR, dic_miR_5p, dic_type, sum_spikein
+	return dic_length_RNA, total_RNA, dic_miR, dic_miR_5p, dic_type
 
 
 ###################
@@ -145,7 +145,6 @@ def commonPlot(dic_length_RNA, total_RNA, prefix):
 	df = df.sort_index(axis=0, ascending=True)
 
 	# fix bug for index
-	#df_RNA = df.loc[:,['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA']]
 	df_RNA = df.reindex(columns=['miRNA', 'tsRNA', 'rsRNA', 'snoRNA', 'lncRNA', 'mRNA'], fill_value=0)
 
 	df_RNA_other = pd.DataFrame(df.sum(axis=1) - df_RNA.sum(axis=1),columns=["others"])
@@ -183,6 +182,4 @@ def commonPlot(dic_length_RNA, total_RNA, prefix):
 	df_RNA_sum.to_csv(pie_csv, header=False, sep='\t')
 	plt.savefig(pie_RNA, bbox_inches='tight')
 	plt.close()
-
-
 

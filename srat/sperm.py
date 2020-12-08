@@ -17,23 +17,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
-
 from general import *
-
 
 colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"]
 
+# ======================= #
 def sperm(prefix, library, threads, collapser, devnull):
-
-	# for spikein	
-	bowtie_spikein_out = prefix + ".bowtie_spikein.out"
-	unmapped_spikein = prefix + ".unmap_spikein.fa"
-	subprocess.call("bowtie -v 0 %s/../spikein/index -p %d -f %s --norc --un %s > %s" % (library, threads, collapser, unmapped_spikein, bowtie_spikein_out), shell=True, stderr=devnull)
 	
 	# for miRNA
 	unmapped_mir = prefix + ".unmap_mir.fa"
 	bowtie_mir_out = prefix + ".bowtie_miRNA.out"
-	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, unmapped_spikein, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
+	subprocess.call("bowtie -v 0 %s/index_miRNA --norc --suppress 6,7 -p %d -f %s --un %s > %s" % (library, threads, collapser, unmapped_mir, bowtie_mir_out), shell=True, stderr=devnull)
 	
 	# for tsRNA
 	unmapped_tsRNA = prefix + ".unmap_tsRNA.fa"
@@ -62,11 +56,12 @@ def sperm(prefix, library, threads, collapser, devnull):
 	# combined
 	bowtie_out_combined = prefix + ".bowtie_combined.out"
 	os.system("cat %s %s %s %s %s > %s" % (bowtie_mir_out, bowtie_piRNA_out, bowtie_tsRNA_out, bowtie_rsRNA_out,  bowtie_RNA_out, bowtie_out_combined))
-	os.system("rm %s %s %s %s %s %s" % (unmapped_spikein, unmapped_mir, unmapped_piRNA, unmapped_rsRNA, unmapped_tsRNA, unmapped_RNA))
+	os.system("rm %s %s %s %s %s" % (unmapped_mir, unmapped_piRNA, unmapped_rsRNA, unmapped_tsRNA, unmapped_RNA))
+	os.system("rm %s %s %s %s %s" % (bowtie_mir_out, bowtie_piRNA_out, bowtie_tsRNA_out, bowtie_rsRNA_out, bowtie_RNA_out))
 
-	return bowtie_spikein_out, bowtie_out_combined, map_genome, unmap_genome
+	return bowtie_out_combined, map_genome, unmap_genome
 
-###
+# ======================= #
 def sperm_RNA(bowtie_out_combined, prefix):
 	'''
 	get tsRNA, rsRNA, piRNA and profile
@@ -126,7 +121,7 @@ def sperm_RNA(bowtie_out_combined, prefix):
 	piRNA_series2 = Series(dic_piR_cluster)
 	piRNA_series2.to_csv(piRNA_out2, header=False, sep='\t')
 
-###################
+# ======================= #
 def spermPlot(dic_length_RNA, total_RNA, prefix):
 
 	df = dic_length_RNA.fillna(value=0)
