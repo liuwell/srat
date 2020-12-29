@@ -1,15 +1,49 @@
 # srat
 A small RNA analysis tool
 
-***
-#### Dependency 
+## Dependency 
 Sevral external software were depended for srat:
 + cutadapt >= 2.10
 + bowtie
 
-#### Mandatory
+## Mandatory
 + biopython
 + numpy
 + pandas
 + matplotlib
 + seaborn
+
+
+
+## Usage
+
+```bash
+srat.py -h
+```
+
+```
+usage: srat.py [-h] -i INPUT [-o OUTDIR] -l LIBRARY
+               [-t {common,testis,sperm,EV}] [-p THREADS] [--no_merge]
+               [--spikein] [-v]
+
+A small RNA analysis and visualization tool
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        the input directory of raw data
+  -o OUTDIR, --outdir OUTDIR
+                        output directory
+  -l LIBRARY, --library LIBRARY
+                        the reference sequence for mapping and annotation
+  -t {common,testis,sperm,EV}, --tissue {common,testis,sperm,EV}
+                        the sample tissue type
+  -p THREADS, --threads THREADS
+                        number of alignment threads to launch (default: 1)
+  --no_merge            not merge the expression files
+  --spikein             consider spikein in the library
+  -v, --version         show program's version number and exit
+
+```
+
+
